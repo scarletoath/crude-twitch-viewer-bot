@@ -94,15 +94,15 @@ class GUI:
         threading.Thread(target=self.manager.delete_all_instances).start()
 
     def save_settings(self):
-        print("Saving settings to file.")
+        logger.info("Saving settings to file.")
+        
         settings = self._settings
         settings.General["channel_url"] = self.root.nametowidget("channel_url_entry").get()
         settings.General["multi_spawn_count"] = self.spawn_count.get()
         settings.General["headless"] = self.headless.get()
         settings.General["auto_restart"] = self.auto_restart.get()
 
-        # todo
-        # settings.Save()
+        settings.Save()
 
     def run(self):
         root = self.root

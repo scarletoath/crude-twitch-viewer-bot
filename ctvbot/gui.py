@@ -66,7 +66,7 @@ class GUI:
 
         self.headless = tk.BooleanVar(value=manager.get_headless())
         self.auto_restart = tk.BooleanVar(value=manager.get_auto_restart())
-        self.spawn_count = tk.IntVar(value=self._settings.General.getint("multi_spawn_count", fallback=3))
+        self.spawn_count = tk.StringVar(value=str(self._settings.General.getint("multi_spawn_count", fallback=3)))
 
         global system_default_color
         system_default_color = self.root.cget("bg")
@@ -82,7 +82,7 @@ class GUI:
     def spawn_multi_func(self):
         print("Spawning three instances. Please wait for alive & watching instances increase.")
         target_url = self.root.nametowidget("channel_url_entry").get()
-        spawn_count = self.spawn_count.get()
+        spawn_count = int(self.spawn_count.get())
         threading.Thread(target=self.manager.spawn_instances, args=(spawn_count, target_url)).start()
 
     def delete_one_func(self):
@@ -152,7 +152,7 @@ class GUI:
             onvalue=True,
             offvalue=False,
         )
-        headless_checkbox.place(x=200, y=94)
+        headless_checkbox.place(x=225, y=94)
 
         auto_restart_checkbox = ttk.Checkbutton(
             root,
@@ -162,7 +162,7 @@ class GUI:
             onvalue=True,
             offvalue=False,
         )
-        auto_restart_checkbox.place(x=320, y=94)
+        auto_restart_checkbox.place(x=330, y=94)
 
         # right
         instances_text = tk.Label(root, text="Instances", borderwidth=2)
@@ -200,7 +200,7 @@ class GUI:
             root,
             width=15,
             anchor="w",
-            text="Spawn 3 instances",
+            text=f"Spawn {str(self.spawn_count.get())} instances",
             command=lambda: self.spawn_multi_func(),
         )
         spawn_multi.place(x=180, y=65)
@@ -220,6 +220,17 @@ class GUI:
             command=lambda: self.delete_all_func(),
         )
         destroy_all.place(x=305, y=65)
+
+        spawn_count = tk.Entry(
+            root, 
+            width=5,
+            name="spawn_count_entry", 
+            textvariable=self.spawn_count,
+            validatecommand=lambda:spawn_multi.configure(text=f"Spawn {str(self.spawn_count.get())} instances"),
+        )
+        spawn_count.delete(0, len(spawn_count.get()))
+        spawn_count.insert(0, self.spawn_count.get())
+        spawn_count.place(x=180, y=94)
 
         # mid text box
         text_area = ScrolledText(root, height="7", width="92", font=("regular", 8))

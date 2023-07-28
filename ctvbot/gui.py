@@ -243,7 +243,7 @@ class GUI:
                 box = InstanceBox(
                     self.manager,
                     self.root,
-                    #bd=0.5,
+                    bd=0.5,
                     #relief="raised",
                     width=10,
                     height=10,

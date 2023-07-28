@@ -226,7 +226,7 @@ class GUI:
             width=5,
             name="spawn_count_entry", 
             textvariable=self.spawn_count,
-            validate="all"
+            validate="all",
             validatecommand=lambda:spawn_multi.configure(text=f"Spawn {str(self.spawn_count.get())} instances"),
         )
         spawn_count.place(x=180, y=94)

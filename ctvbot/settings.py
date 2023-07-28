@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 class Settings:
     def __init__(self, settings_file_name="settings.ini"):
         self._settings = {}
-        self.pathed_file_name = os.path.join(os.getcwd(), "config", proxy_file_name)
+        self.pathed_file_name = os.path.join(os.getcwd(), "config", settings_file_name)
         self.load_settings()
 
     @property

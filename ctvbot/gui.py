@@ -21,9 +21,19 @@ logger = logging.getLogger(__name__)
 system_default_color = None
 
 
-class InstanceBox(tk.Frame):
+class InstanceBox(tk.Button):
+    color_codes = {
+        "inactive": system_default_color,
+        "starting": "grey",
+        "initialized": "yellow",
+        "restarting": "#ff7f00",
+        "buffering": "#00aaaa",
+        "watching": "#44d209",
+        "shutdown": system_default_color,
+    }
+
     def __init__(self, manager, parent, *args, **kwargs):
-        tk.Frame.__init__(self, parent, *args, **kwargs)
+        tk.Button.__init__(self, parent, *args, **kwargs)
 
         self.instance_id = None
         self.manager = manager
@@ -40,17 +50,6 @@ class InstanceBox(tk.Frame):
 
     def modify(self, status, instance_id):
         self.instance_id = instance_id
-
-        # todo: enum
-        color_codes = {
-            "inactive": system_default_color,
-            "starting": "grey",
-            "initialized": "yellow",
-            "restarting": "#ff7f00",
-            "buffering": "#00aaaa",
-            "watching": "#44d209",
-            "shutdown": system_default_color,
-        }
 
         color = color_codes[status.value]
         self.configure(background=color)
@@ -266,16 +265,20 @@ class GUI:
         def refresher():
             instances_overview = self.manager.instances_overview
 
+            # Update anything that isn't inactive
             for (id, status), box in zip(instances_overview.items(), self.instances_boxes):
                 box.modify(status, id)
 
+            # Reset newly inactive instance boxes
             for index in range(len(instances_overview), len(self.instances_boxes)):
                 self.instances_boxes[index].modify(utils.InstanceStatus.INACTIVE, None)
 
+            # Instances counts
             proxy_available.configure(text=len(self.manager.proxies.proxy_list))
             alive_instances.configure(text=self.manager.instances_alive_count)
             watching_instances.configure(text=str(self.manager.instances_watching_count))
 
+            # Resource usage
             cpu_usage_text.configure(text=" {:.2f}% CPU".format(psutil.cpu_percent()))
             ram_usage_text.configure(text=" {:.2f}% RAM".format(psutil.virtual_memory().percent))
 

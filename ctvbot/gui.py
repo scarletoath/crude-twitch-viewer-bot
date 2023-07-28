@@ -66,6 +66,7 @@ class GUI:
         self.headless = tk.BooleanVar(value=manager.get_headless())
         self.auto_restart = tk.BooleanVar(value=manager.get_auto_restart())
         self.spawn_count = tk.StringVar(value=str(self._settings.General.getint("multi_spawn_count", fallback=3)))
+        self.channel_url = tk.StringVar(value=self._settings.General.get("channel_url", fallback="https://www.twitch.tv/channel_name"))
 
         global system_default_color
         system_default_color = self.root.cget("bg")
@@ -75,12 +76,12 @@ class GUI:
 
     def spawn_one_func(self):
         print("Spawning one instance. Please wait for alive & watching instances increase.")
-        target_url = self.root.nametowidget("channel_url_entry").get()
+        target_url = self.channel_url.get()
         threading.Thread(target=self.manager.spawn_instance, args=(target_url,)).start()
 
     def spawn_multi_func(self):
         print("Spawning three instances. Please wait for alive & watching instances increase.")
-        target_url = self.root.nametowidget("channel_url_entry").get()
+        target_url = self.channel_url.get()
         spawn_count = int(self.spawn_count.get())
         threading.Thread(target=self.manager.spawn_instances, args=(spawn_count, target_url)).start()
 
@@ -96,10 +97,10 @@ class GUI:
         logger.info("Saving settings to file.")
         
         settings = self._settings
-        settings.General["channel_url"] = self.root.nametowidget("channel_url_entry").get()
         settings.General["multi_spawn_count"] = self.spawn_count.get()
         settings.General["headless"] = self.headless.get()
         settings.General["auto_restart"] = self.auto_restart.get()
+        settings.General["channel_url"] = self.channel_url.get()
 
         settings.save_settings()
 
@@ -183,9 +184,9 @@ class GUI:
         ram_usage_text.place(x=510, y=88)
 
         # mid log
-        channel_url = tk.Entry(root, width=40, name="channel_url_entry")
+        channel_url = tk.Entry(root, width=40, name="channel_url_entry", textvariable=self.channel_url)
         channel_url.place(x=180, y=10)
-        channel_url.insert(0, settings.General.get("channel_url", fallback="https://www.twitch.tv/channel_name"))
+        #channel_url.insert(0, settings.General.get("channel_url", fallback="https://www.twitch.tv/channel_name"))
 
         spawn_one = tk.Button(
             root,

@@ -33,7 +33,7 @@ class InstanceBox(tk.Button):
     }
 
     def __init__(self, manager, parent, *args, **kwargs):
-        tk.Button.__init__(self, parent, *args, **kwargs)
+        super().__init__(parent, *args, **kwargs)
 
         self.instance_id = None
         self.manager = manager
@@ -255,7 +255,7 @@ class GUI:
                     self.manager,
                     self.root,
                     bd=0.5,
-                    #relief="raised",
+                    relief="raised",
                     width=10,
                     height=10,
                 )

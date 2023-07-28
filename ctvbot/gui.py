@@ -151,7 +151,7 @@ class GUI:
             onvalue=True,
             offvalue=False,
         )
-        headless_checkbox.place(x=225, y=94)
+        headless_checkbox.place(x=240, y=94)
 
         auto_restart_checkbox = ttk.Checkbutton(
             root,
@@ -227,8 +227,6 @@ class GUI:
             textvariable=self.spawn_count,
             validatecommand=lambda:spawn_multi.configure(text=f"Spawn {str(self.spawn_count.get())} instances"),
         )
-        spawn_count.delete(0, len(spawn_count.get()))
-        spawn_count.insert(0, self.spawn_count.get())
         spawn_count.place(x=180, y=94)
 
         # mid text box
@@ -243,8 +241,8 @@ class GUI:
                 box = InstanceBox(
                     self.manager,
                     self.root,
-                    bd=0.5,
-                    relief="raised",
+                    #bd=0.5,
+                    #relief="raised",
                     width=10,
                     height=10,
                 )

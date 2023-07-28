@@ -55,6 +55,7 @@ jobs:
       run: |
         poetry run pyinstaller main_gui.py --onefile --add-binary "ctvbot_logo.ico;." --add-binary "pyproject.toml;." --icon ctvbot_logo.ico --name CTVB_${{steps.read_toml.outputs.value}}_${{env.today}}
         mv ./proxy/ ./dist/
+        mv ./config/ ./dist/
 
     - name: Upload artifact ${{ matrix.os }}
       uses: actions/upload-artifact@v1

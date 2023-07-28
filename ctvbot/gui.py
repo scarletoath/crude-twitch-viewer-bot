@@ -80,7 +80,7 @@ class GUI:
         threading.Thread(target=self.manager.spawn_instance, args=(target_url,)).start()
 
     def spawn_multi_func(self):
-        print("Spawning three instances. Please wait for alive & watching instances increase.")
+        print(f"Spawning {self.spawn_count.get()} instances. Please wait for alive & watching instances increase.")
         target_url = self.channel_url.get()
         spawn_count = int(self.spawn_count.get())
         threading.Thread(target=self.manager.spawn_instances, args=(spawn_count, target_url)).start()

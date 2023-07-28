@@ -22,7 +22,7 @@ system_default_color = None
 
 
 class InstanceBox(tk.Button):
-    color_codes = {
+    _color_codes = {
         "inactive": system_default_color,
         "starting": "grey",
         "initialized": "yellow",
@@ -51,7 +51,7 @@ class InstanceBox(tk.Button):
     def modify(self, status, instance_id):
         self.instance_id = instance_id
 
-        color = color_codes[status.value]
+        color = InstanceBox._color_codes[status.value]
         self.configure(background=color)
 
 

@@ -14,6 +14,7 @@ import toml
 from . import utils
 from .manager import InstanceManager
 from .utils import InstanceCommands
+from .settings import Settings
 
 logger = logging.getLogger(__name__)
 
@@ -61,9 +62,11 @@ class GUI:
         self.queue_counter = 0
         self.root = tk.Tk()
         self.instances_boxes = []
+        self._settings = Settings()
 
         self.headless = tk.BooleanVar(value=manager.get_headless())
         self.auto_restart = tk.BooleanVar(value=manager.get_auto_restart())
+        self.spawn_count = tk.IntVar(value=self._settings.General.getint("multi_spawn_count", fallback=3))
 
         global system_default_color
         system_default_color = self.root.cget("bg")
@@ -76,10 +79,11 @@ class GUI:
         target_url = self.root.nametowidget("channel_url_entry").get()
         threading.Thread(target=self.manager.spawn_instance, args=(target_url,)).start()
 
-    def spawn_three_func(self):
+    def spawn_multi_func(self):
         print("Spawning three instances. Please wait for alive & watching instances increase.")
         target_url = self.root.nametowidget("channel_url_entry").get()
-        threading.Thread(target=self.manager.spawn_instances, args=(3, target_url)).start()
+        spawn_count = self.spawn_count.get()
+        threading.Thread(target=self.manager.spawn_instances, args=(spawn_count, target_url)).start()
 
     def delete_one_func(self):
         print("Destroying one instance. Please wait for alive & watching instances decrease.")
@@ -89,9 +93,22 @@ class GUI:
         print("Destroying all instances. Please wait for alive & watching instances decrease.")
         threading.Thread(target=self.manager.delete_all_instances).start()
 
+    def save_settings(self):
+        print("Saving settings to file.")
+        settings = self._settings
+        settings.General["channel_url"] = self.root.nametowidget("channel_url_entry").get()
+        settings.General["multi_spawn_count"] = self.spawn_count.get()
+        settings.General["headless"] = self.headless.get()
+        settings.General["auto_restart"] = self.auto_restart.get()
+
+        # todo
+        # settings.Save()
+
     def run(self):
         root = self.root
         root.geometry("600x305+500+500")
+
+        settings = self._settings
 
         # path to use, when the tool is not package with pyinstaller -onefile
         non_pyinstaller_path = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
@@ -169,7 +186,7 @@ class GUI:
         # mid log
         channel_url = tk.Entry(root, width=40, name="channel_url_entry")
         channel_url.place(x=180, y=10)
-        channel_url.insert(0, "https://www.twitch.tv/channel_name")
+        channel_url.insert(0, settings.General.get("channel_url", fallback="https://www.twitch.tv/channel_name"))
 
         spawn_one = tk.Button(
             root,
@@ -179,14 +196,14 @@ class GUI:
             command=lambda: self.spawn_one_func(),
         )
         spawn_one.place(x=180, y=35)
-        spawn_three = tk.Button(
+        spawn_multi = tk.Button(
             root,
             width=15,
             anchor="w",
             text="Spawn 3 instances",
-            command=lambda: self.spawn_three_func(),
+            command=lambda: self.spawn_multi_func(),
         )
-        spawn_three.place(x=180, y=65)
+        spawn_multi.place(x=180, y=65)
         destroy_one = tk.Button(
             root,
             width=15,
@@ -269,3 +286,5 @@ class GUI:
 
         root.resizable(False, False)
         root.mainloop()
+
+        self.save_settings()

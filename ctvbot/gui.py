@@ -98,8 +98,8 @@ class GUI:
         
         settings = self._settings
         settings.General["multi_spawn_count"] = self.spawn_count.get()
-        settings.General["headless"] = self.headless.get()
-        settings.General["auto_restart"] = self.auto_restart.get()
+        settings.General["headless"] = str(self.headless.get())
+        settings.General["auto_restart"] = str(self.auto_restart.get())
         settings.General["channel_url"] = self.channel_url.get()
 
         settings.save_settings()

@@ -45,8 +45,8 @@ class InstanceBox(tk.Frame):
             "inactive": system_default_color,
             "starting": "grey",
             "initialized": "yellow",
-            "restarting": "yellow",
-            "buffering": "yellow",
+            "restarting": "#ff7f00",
+            "buffering": "#00aaaa",
             "watching": "#44d209",
             "shutdown": system_default_color,
         }

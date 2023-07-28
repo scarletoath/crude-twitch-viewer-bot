@@ -221,13 +221,24 @@ class GUI:
         )
         destroy_all.place(x=305, y=65)
 
+        def validate_spawn_count(P):
+            input = str(P)
+
+            if (len(input) == 0): # empty string
+                return true
+            elif (str.isdigit(input)): # invalid string with non-digits
+                return false
+        
+            spawn_multi.configure(text=f"Spawn {input} instances")
+            return true
+
         spawn_count = tk.Entry(
             root, 
             width=5,
             name="spawn_count_entry", 
             textvariable=self.spawn_count,
-            validate="all",
-            validatecommand=lambda:spawn_multi.configure(text=f"Spawn {str(self.spawn_count.get())} instances"),
+            validate="key",
+            validatecommand=(validate_spawn_count, "%P"),
         )
         spawn_count.place(x=180, y=94)
 

@@ -1,13 +1,15 @@
 from ctvbot.gui import GUI
 from ctvbot.manager import InstanceManager
+from ctvbot.settings import Settings
 
+settings = Settings()
 
-SPAWNER_THREAD_COUNT = 3
-CLOSER_THREAD_COUNT = 10
-PROXY_FILE_NAME = "proxy_list.txt"
-HEADLESS = True
-AUTO_RESTART = True
-SPAWN_INTERVAL_SECONDS = 2
+SPAWNER_THREAD_COUNT   = settings.General.getint("multi_spawn_count", fallback=3)
+CLOSER_THREAD_COUNT    = settings.General.getint("closer_thread_count", fallback=10)
+PROXY_FILE_NAME        = "proxy_list.txt"
+HEADLESS               = settings.General.getboolean("headless", fallback=True)
+AUTO_RESTART           = settings.General.getboolean("auto_restart", fallback=True)
+SPAWN_INTERVAL_SECONDS = settings.General.getint("spawn_interval", fallback=2)
 
 manager = InstanceManager(
     spawn_thread_count=SPAWNER_THREAD_COUNT,

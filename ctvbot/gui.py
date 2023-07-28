@@ -102,7 +102,7 @@ class GUI:
         settings.General["headless"] = self.headless.get()
         settings.General["auto_restart"] = self.auto_restart.get()
 
-        settings.Save()
+        settings.save_settings()
 
     def run(self):
         root = self.root

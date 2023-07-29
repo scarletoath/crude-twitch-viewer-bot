@@ -220,6 +220,13 @@ class GUI:
             command=lambda: self.delete_all_func(),
         )
         destroy_all.place(x=305, y=65)
+        
+        spawn_count = tk.Entry(
+            root, 
+            width=5,
+            name="spawn_count_entry", 
+            textvariable=self.spawn_count
+        )
 
         def validate_spawn_count(P):
             input = str(P)
@@ -234,14 +241,7 @@ class GUI:
             return True
 
         validate_spawn_count_handle = root.register(validate_spawn_count)
-        spawn_count = tk.Entry(
-            root, 
-            width=5,
-            name="spawn_count_entry", 
-            textvariable=self.spawn_count,
-            validate="key",
-            validatecommand=(validate_spawn_count_handle, "%P"),
-        )
+        spawn_count.configure(validate="key", validatecommand=(validate_spawn_count_handle, "%P"))
         spawn_count.place(x=180, y=94)
 
         # mid text box

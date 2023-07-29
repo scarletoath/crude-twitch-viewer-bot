@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 system_default_color = None
 
 
-class InstanceBox(tk.Button):
+class InstanceBox(tk.Frame):
     _color_codes = {
         "inactive": system_default_color,
         "starting": "grey",
@@ -31,6 +31,10 @@ class InstanceBox(tk.Button):
         "watching": "#44d209",
         "shutdown": system_default_color,
     }
+
+    @staticmethod
+    def SetDefaultColor(color):
+        InstanceBox._color_codes["inactive"] = InstanceBox._color_codes["shutdown"] = color
 
     def __init__(self, manager, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
@@ -70,6 +74,7 @@ class GUI:
 
         global system_default_color
         system_default_color = self.root.cget("bg")
+        InstanceBox.SetDefaultColor(system_default_color)
 
     def __del__(self):
         print("Gui shutting down", datetime.datetime.now())
@@ -234,10 +239,10 @@ class GUI:
 
             if (len(input) == 0): # empty string
                 return True
-            elif (str.isdigit(input)): # invalid string with non-digits
+            elif (not str.isdigit(input)): # invalid string with non-digits
                 return False
         
-            spawn_multi.configure(text=f"Spawn {input} instances2")
+            spawn_multi.configure(text=f"Spawn {input} instances")
             return True
 
         validate_spawn_count_handle = root.register(validate_spawn_count)

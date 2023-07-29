@@ -223,7 +223,6 @@ class GUI:
 
         def validate_spawn_count(P):
             input = str(P)
-            logging.debug(f"Performing validation = {input}")
 
             if (len(input) == 0): # empty string
                 return True
@@ -233,16 +232,17 @@ class GUI:
             spawn_multi.configure(text=f"Spawn {input} instances")
             return True
 
+
+        validate_spawn_count_handle = root.register(validate_spawn_count)
         spawn_count = tk.Entry(
             root, 
             width=5,
             name="spawn_count_entry", 
             textvariable=self.spawn_count,
             validate="key",
-            validatecommand=(validate_spawn_count, "%P"),
+            validatecommand=(validate_spawn_count_handle, "%P"),
         )
         spawn_count.place(x=180, y=94)
-        #logging.debug(f"{spawn_count.validate}")
 
         # mid text box
         text_area = ScrolledText(root, height="7", width="92", font=("regular", 8))

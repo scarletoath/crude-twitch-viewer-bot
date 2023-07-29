@@ -223,15 +223,15 @@ class GUI:
 
         def validate_spawn_count(P):
             input = str(P)
+            spawn_count.configure(validate="key", validatecommand=(validate_spawn_count_handle, "%P"))
 
             if (len(input) == 0): # empty string
                 return True
             elif (str.isdigit(input)): # invalid string with non-digits
                 return False
         
-            spawn_multi.configure(text=f"Spawn {input} instances")
+            spawn_multi.configure(text=f"Spawn {input} instances2")
             return True
-
 
         validate_spawn_count_handle = root.register(validate_spawn_count)
         spawn_count = tk.Entry(

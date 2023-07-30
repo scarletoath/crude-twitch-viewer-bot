@@ -1,8 +1,8 @@
 # Crude Twitch Viewer Bot (CTVBot)
-[![](https://img.shields.io/github/downloads/jlplenio/crude-twitch-viewer-bot/total)](https://github.com/jlplenio/crude-twitch-viewer-bot/releases/latest)
-[![](https://github.com/jlplenio/crude-twitch-viewer-bot/actions/workflows/pytest.yml/badge.svg)](https://github.com/jlplenio/crude-twitch-viewer-bot/actions/workflows/pytest.yml)
-[![format & lint](https://github.com/jlplenio/crude-twitch-viewer-bot/actions/workflows/format_lint.yml/badge.svg)](https://github.com/jlplenio/crude-twitch-viewer-bot/actions/workflows/format_lint.yml)
-[![](https://github.com/jlplenio/crude-twitch-viewer-bot/actions/workflows/build.yml/badge.svg)](https://github.com/jlplenio/crude-twitch-viewer-bot/actions/workflows/build.yml)
+[![](https://img.shields.io/github/downloads/scarletoath/crude-twitch-viewer-bot/total)](https://github.com/scarletoath/crude-twitch-viewer-bot/releases/latest)
+[![](https://github.com/scarletoath/crude-twitch-viewer-bot/actions/workflows/pytest.yml/badge.svg)](https://github.com/scarletoath/crude-twitch-viewer-bot/actions/workflows/pytest.yml)
+[![format & lint](https://github.com/scarletoath/crude-twitch-viewer-bot/actions/workflows/format_lint.yml/badge.svg)](https://github.com/scarletoath/crude-twitch-viewer-bot/actions/workflows/format_lint.yml)
+[![](https://github.com/scarletoath/crude-twitch-viewer-bot/actions/workflows/build.yml/badge.svg)](https://github.com/scarletoath/crude-twitch-viewer-bot/actions/workflows/build.yml)
 
 >Disclaimer: For educational purpose only. Any discussion of illegal use will be deleted immediately!
 ### Getting Started

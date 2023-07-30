@@ -1,9 +1,9 @@
 ---
 name: Start a Bug Report
 about: Only for technical bugs and problems.
-title: ''
+title: '[Bug] '
 labels: 'bug'
-assignees: jlplenio
+assignees: scarletoath
 ---
 
 <!-------------------------------------------------------------------------

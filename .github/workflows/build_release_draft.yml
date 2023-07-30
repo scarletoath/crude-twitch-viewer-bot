@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch: {}
 
 env:
   PLAYWRIGHT_BROWSERS_PATH: 0
@@ -56,6 +57,7 @@ jobs:
           poetry run pyinstaller main_gui.py --onefile --add-binary "ctvbot_logo.ico:." --add-binary "pyproject.toml:." --icon ctvbot_logo.ico --name ${{env.output_filename}}.bin
         fi
         mv ./proxy/ ./dist/
+        mv ./config/ ./dist/
 
     - name: Zip executable
       uses: vimtor/action-zip@v1

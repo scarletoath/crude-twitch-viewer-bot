@@ -75,6 +75,7 @@ class GUI:
         self.headless = tk.BooleanVar(value=manager.get_headless())
         self.auto_restart = tk.BooleanVar(value=manager.get_auto_restart())
         self.spawn_count = tk.StringVar(value=str(self._settings.General.getint("multi_spawn_count", fallback=3)))
+        self.spawn_auto_max = tk.StringVar(value=str(self._settings.General.getint("auto_spawn_target", fallback=16)))
         self.channel_url = tk.StringVar(value=self._settings.General.get("channel_url", fallback="https://www.twitch.tv/channel_name"))
 
         global system_default_color
@@ -95,6 +96,16 @@ class GUI:
         spawn_count = int(self.spawn_count.get())
         threading.Thread(target=self.manager.spawn_instances, args=(spawn_count, target_url)).start()
 
+    def spawn_auto_func(self, widget):
+        if not self.manager.isAutoSpawning:
+            target_url = self.channel_url.get()
+            max_target = self._settings.General.getint("auto_spawn_target", fallback=16)
+            threading.Thread(target=self.manager.begin_auto_spawn, args=(max_target, target_url)).start()
+            widget.configure(text="Stop Auto")
+        else:
+            self.manager.end_auto_spawn()
+            widget.configure(text="Spawn Auto")
+
     def delete_one_func(self):
         print("Destroying one instance. Please wait for alive & watching instances decrease.")
         threading.Thread(target=self.manager.delete_latest).start()
@@ -108,6 +119,7 @@ class GUI:
         
         settings = self._settings
         settings.General["multi_spawn_count"] = self.spawn_count.get()
+        settings.General["auto_spawn_target"] = self.spawn_auto_max.get()
         settings.General["headless"] = str(self.headless.get())
         settings.General["auto_restart"] = str(self.auto_restart.get())
         settings.General["channel_url"] = self.channel_url.get()
@@ -155,99 +167,93 @@ class GUI:
 
         # separators
         separator_left = ttk.Separator(orient="vertical")
-        separator_left.place(x=170, relx=0, rely=0, relwidth=0.2, relheight=0.5)
+        separator_left.place(x=125, relx=0, rely=0, relwidth=0.2, relheight=0.5)
         separator_right = ttk.Separator(orient="vertical")
         separator_right.place(x=-170, relx=1, rely=0, relwidth=0.2, relheight=0.5)
 
         # left
+        left = 20
+
         proxy_available_text = tk.Label(root, text="Proxies Available", borderwidth=2)
-        proxy_available_text.place(x=40, y=10)
+        proxy_available_text.place(x=left, y=10)
         proxy_available = tk.Label(root, text="0", borderwidth=2, relief="solid", width=5)
-        proxy_available.place(x=70, y=40)
+        proxy_available.place(x=left+30, y=40)
 
         lbl_buy = tk.Label(root, text="(buy more)", fg="blue", cursor="hand2")
         lbl_buy.bind(
             "<Button-1>",
             lambda event: webbrowser.open("https://www.webshare.io/?referral_code=w6nfvip4qp3g"),
         )
-        lbl_buy.place(x=58, y=62)
-
-        headless_checkbox = ttk.Checkbutton(
-            root,
-            text="headless",
-            variable=self.headless,
-            command=lambda: self.manager.set_headless(self.headless.get()),
-            onvalue=True,
-            offvalue=False,
-        )
-        headless_checkbox.place(x=240, y=94)
-
-        auto_restart_checkbox = ttk.Checkbutton(
-            root,
-            variable=self.auto_restart,
-            text="auto restart",
-            command=lambda: self.manager.set_auto_restart(self.auto_restart.get()),
-            onvalue=True,
-            offvalue=False,
-        )
-        auto_restart_checkbox.place(x=330, y=94)
+        lbl_buy.place(x=left+18, y=62)
 
         # right
+        left = 440
+
         instances_text = tk.Label(root, text="Instances", borderwidth=2)
-        instances_text.place(x=455, y=10)
+        instances_text.place(x=left+15, y=10)
 
         alive_instances_text = tk.Label(root, text="alive", borderwidth=2)
-        alive_instances_text.place(x=455, y=40)
+        alive_instances_text.place(x=left+15, y=40)
         watching_instances_text = tk.Label(root, text="watching", borderwidth=2)
-        watching_instances_text.place(x=455, y=60)
+        watching_instances_text.place(x=left+15, y=60)
 
         alive_instances = tk.Label(root, text=0, borderwidth=2, relief="solid", width=5)
-        alive_instances.place(x=530, y=40)
+        alive_instances.place(x=left+90, y=40)
         watching_instances = tk.Label(root, text=0, borderwidth=2, relief="solid", width=5)
-        watching_instances.place(x=530, y=60)
+        watching_instances.place(x=left+90, y=60)
 
         cpu_usage_text = tk.Label(root, text="CPU", borderwidth=2)
-        cpu_usage_text.place(x=440, y=88)
+        cpu_usage_text.place(x=left, y=88)
         ram_usage_text = tk.Label(root, text="RAM", borderwidth=2)
-        ram_usage_text.place(x=510, y=88)
+        ram_usage_text.place(x=left+70, y=88)
 
         # mid log
-        channel_url = tk.Entry(root, width=40, name="channel_url_entry", textvariable=self.channel_url)
-        channel_url.place(x=180, y=10)
+        left = 140
+
+        channel_url = tk.Entry(root, width=45, name="channel_url_entry", textvariable=self.channel_url)
+        channel_url.place(x=left, y=10)
         #channel_url.insert(0, settings.General.get("channel_url", fallback="https://www.twitch.tv/channel_name"))
 
         spawn_one = tk.Button(
             root,
-            width=15,
+            width=10,
             anchor="w",
-            text="Spawn 1 instance",
+            text="Spawn 1",
             command=lambda: self.spawn_one_func(),
         )
-        spawn_one.place(x=180, y=35)
+        spawn_one.place(x=left, y=35)
         spawn_multi = tk.Button(
             root,
-            width=15,
+            width=10,
             anchor="w",
-            text=f"Spawn {str(self.spawn_count.get())} instances",
+            text=f"Spawn {str(self.spawn_count.get())}",
             command=lambda: self.spawn_multi_func(),
         )
-        spawn_multi.place(x=180, y=65)
+        spawn_multi.place(x=left, y=65)
+        spawn_auto = tk.Button(
+            root,
+            width=10,
+            anchor="w",
+            text=f"Spawn Auto",
+            command=lambda: self.spawn_auto_func(spawn_auto),
+        )
+        spawn_auto.place(x=left+100, y=35)
         destroy_one = tk.Button(
             root,
-            width=15,
+            width=10,
             anchor="w",
-            text="Destroy 1 instance",
+            text="Destroy last",
             command=lambda: self.delete_one_func(),
         )
-        destroy_one.place(x=305, y=35)
+        destroy_one.place(x=left+200, y=35)
         destroy_all = tk.Button(
             root,
-            width=15,
+            width=10,
             anchor="w",
-            text="Destroy all instances",
+            text="Destroy all",
             command=lambda: self.delete_all_func(),
         )
-        destroy_all.place(x=305, y=65)
+        destroy_all.place(x=left+200, y=65)
         
         spawn_count = tk.Entry(
             root, 
@@ -258,19 +264,59 @@ class GUI:
 
         def validate_spawn_count(P):
             input = str(P)
-            spawn_count.configure(validate="key", validatecommand=(validate_spawn_count_handle, "%P"))
 
             if (len(input) == 0): # empty string
                 return True
             elif (not str.isdigit(input)): # invalid string with non-digits
                 return False
         
-            spawn_multi.configure(text=f"Spawn {input} instances")
+            spawn_multi.configure(text=f"Spawn {input}")
             return True
 
         validate_spawn_count_handle = root.register(validate_spawn_count)
         spawn_count.configure(validate="key", validatecommand=(validate_spawn_count_handle, "%P"))
-        spawn_count.place(x=180, y=94)
+        spawn_count.place(x=left, y=94)
+        
+        spawn_auto_max = tk.Entry(
+            root, 
+            width=5,
+            name="spawn_auto_max_entry", 
+            textvariable=self.spawn_auto_max
+        )
+
+        def validate_spawn_auto_max(P):
+            input = str(P)
+
+            if (len(input) == 0): # empty string
+                return True
+            elif (not str.isdigit(input)): # invalid string with non-digits
+                return False
+        
+            return True
+
+        validate_spawn_auto_max_handle = root.register(validate_spawn_auto_max)
+        spawn_auto_max.configure(validate="key", validatecommand=(validate_spawn_auto_max, "%P"))
+        spawn_auto_max.place(x=left+100, y=65)
+
+        headless_checkbox = ttk.Checkbutton(
+            root,
+            text="headless",
+            variable=self.headless,
+            command=lambda: self.manager.set_headless(self.headless.get()),
+            onvalue=True,
+            offvalue=False,
+        )
+        headless_checkbox.place(x=left+100, y=94)
+
+        auto_restart_checkbox = ttk.Checkbutton(
+            root,
+            variable=self.auto_restart,
+            text="auto restart",
+            command=lambda: self.manager.set_auto_restart(self.auto_restart.get()),
+            onvalue=True,
+            offvalue=False,
+        )
+        auto_restart_checkbox.place(x=left+200, y=94)
 
         # mid text box
         text_area = ScrolledText(root, height="7", width="92", font=("regular", 8))
@@ -329,7 +375,7 @@ class GUI:
 
         # redirect stdout
         def redirector(str_input):
-            if self.root:
+            if self.root and self._alive:
                 text_area.configure(state="normal")
                 text_area.insert(tk.END, str_input)
                 text_area.see(tk.END)

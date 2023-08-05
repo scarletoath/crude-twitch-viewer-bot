@@ -34,6 +34,7 @@ class InstanceManager:
         self._delete_thread_count = delete_thread_count
         self._headless = headless
         self._auto_restart = auto_restart
+        self._stop_auto_spawn_event = None
         self.proxies = ProxyGetter(os.path.join(os.getcwd(), "proxy", proxy_file_name))
         self.spawn_interval_seconds = spawn_interval_seconds
         self.target_url = target_url
@@ -72,12 +73,54 @@ class InstanceManager:
         self.reconfigure_auto_restart_status()
 
     def __del__(self):
+        self.end_auto_spawn()
         print("Deleting manager: cleaning up instances", datetime.datetime.now())
         self.delete_all_instances()
         print("Manager shutting down", datetime.datetime.now())
 
     def get_random_user_agent(self):
         return random.choice(self.user_agents_list)
+
+    @property
+    def isAutoSpawning(self):
+        return self._stop_auto_spawn_event is not None
+
+    def begin_auto_spawn(self, max_target, target_url=None):
+        print(f"Starting auto spawn with target of {max_target}")
+        logger.info(f"Starting auto spawn with target of {max_target}")
+        stop_event = self._stop_auto_spawn_event = threading.Event()
+        
+        def auto_spawn_loop():
+            cond = threading.Condition()
+
+            while True:
+                # check for instance count and spawn if needed
+                should_spawn = self.instances_watching_count < max_target
+                #print(f"watch={self.instances_watching_count} target={max_target} spawn={should_spawn}")
+
+                if should_spawn:
+                    self.spawn_instance(target_url)
+
+                # wait for interval or stop request
+                with cond:
+                    cond.wait_for(stop_event.isSet, self.spawn_interval_seconds)
+                    pass
+
+                if stop_event.isSet():
+                    print("Auto spawn stopped")
+                    break
+
+        threading.Thread(target=auto_spawn_loop).start()
+
+    def end_auto_spawn(self):
+        if self._stop_auto_spawn_event is not None:
+            print("Stopping auto spawn")
+            logger.info("Stopping auto spawn")
+            self._stop_auto_spawn_event.set()
+            self._stop_auto_spawn_event = None
+
+    def _auto_spawn_monitor(self):
+        pass
 
     def update_instances_alive_count(self):
         alive_instances = filter(

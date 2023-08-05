@@ -15,6 +15,10 @@ class Settings:
     def General(self):
         return self._config['General']
 
+    @property
+    def Window(self):
+        return self._config['Window']
+
     def load_settings(self):
         config = self._config
         config.read(self.pathed_file_name)

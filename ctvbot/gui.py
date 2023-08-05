@@ -60,6 +60,11 @@ class InstanceBox(tk.Frame):
 
 
 class GUI:
+    _DEFAULT_WIDTH = 600
+    _DEFAULT_HEIGHT = 305
+    _DEFAULT_TOP = 500
+    _DEFAULT_LEFT = 500
+
     def __init__(self, manager: InstanceManager):
         self.manager = manager
         self.queue_counter = 0
@@ -107,13 +112,31 @@ class GUI:
         settings.General["auto_restart"] = str(self.auto_restart.get())
         settings.General["channel_url"] = self.channel_url.get()
 
+        settings.Window["top"] = str(self.root.winfo_y())
+        settings.Window["left"] = str(self.root.winfo_x())
+
         settings.save_settings()
+
+    @staticmethod
+    def validate_clamp(value, max, default):
+        if value == -1:
+            return default
+        if value >= max:
+            return max
+        if value < 0:
+            return 0
+        return value
 
     def run(self):
         root = self.root
-        root.geometry("600x305+500+500")
+        self._alive = True
 
         settings = self._settings
+
+        # Get window position from settings, and clamp to visible window
+        win_x = GUI.validate_clamp(settings.Window.getint("left", fallback=GUI._DEFAULT_LEFT), root.winfo_screenwidth() - GUI._DEFAULT_WIDTH, GUI._DEFAULT_LEFT)
+        win_y = GUI.validate_clamp(settings.Window.getint("top", fallback=GUI._DEFAULT_TOP), root.winfo_screenheight() - GUI._DEFAULT_HEIGHT, GUI._DEFAULT_TOP)
+        root.geometry(f"{GUI._DEFAULT_WIDTH}x{GUI._DEFAULT_HEIGHT}+{win_x}+{win_y}")
 
         # path to use, when the tool is not package with pyinstaller -onefile
         non_pyinstaller_path = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
@@ -316,7 +339,12 @@ class GUI:
 
         sys.stdout.write = redirector
 
-        root.resizable(False, False)
-        root.mainloop()
+        def onDestroy(evt):
+            if evt.widget is root:
+                self._alive = False
+                self.manager.end_auto_spawn()
+                self.save_settings()
 
-        self.save_settings()
+        root.resizable(False, False)
+        root.bind("<Destroy>", onDestroy)
+        root.mainloop()

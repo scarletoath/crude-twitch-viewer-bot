@@ -12,6 +12,14 @@ logger = logging.getLogger(__name__)
 
 
 class Instance(ABC):
+    _browser_type = "chromium"
+    _browser_path = None
+
+    @staticmethod
+    def config_browser(type, path=None):
+        Instance._browser_type = type
+        Instance._browser_path = path if path else None
+
     name = "BASE"
     instance_lock = threading.Lock()
 
@@ -129,9 +137,18 @@ class Instance(ABC):
 
         self.playwright = sync_playwright().start()
 
-        self.browser = self.playwright.chromium.launch(
+        browser_type = self.playwright.chromium # default to chromium if not specified
+        if Instance._browser_type == "chromium":
+            browser_type = self.playwright.chromium
+        elif Instance._browser_type == "firefox":
+            browser_type = self.playwright.firefox
+        elif Instance._browser_type == "webkit":
+            browser_type = self.playwright.webkit
+
+        self.browser = browser_type.launch(
             proxy=proxy_dict,
             headless=self.headless,
+            executable_path=Instance._browser_path,
             channel="chrome",
             args=[
                 "--window-position={},{}".format(self.location_info["x"], self.location_info["y"]),

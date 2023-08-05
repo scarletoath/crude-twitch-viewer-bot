@@ -19,6 +19,10 @@ class Settings:
     def Window(self):
         return self._config['Window']
 
+    @property
+    def Browsers(self):
+        return self._config['Browsers']
+
     def load_settings(self):
         config = self._config
         config.read(self.pathed_file_name)

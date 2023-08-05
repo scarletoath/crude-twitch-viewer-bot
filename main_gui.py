@@ -1,6 +1,7 @@
 from ctvbot.gui import GUI
 from ctvbot.manager import InstanceManager
 from ctvbot.settings import Settings
+from ctvbot.instance import Instance
 
 settings = Settings()
 
@@ -10,6 +11,11 @@ PROXY_FILE_NAME        = "proxy_list.txt"
 HEADLESS               = settings.General.getboolean("headless", fallback=True)
 AUTO_RESTART           = settings.General.getboolean("auto_restart", fallback=True)
 SPAWN_INTERVAL_SECONDS = settings.General.getint("spawn_interval", fallback=2)
+
+BROWSER_TYPE = settings.Browsers.get("launch", fallback="chromium")
+BROWSER_PATH = settings.Browsers.get(BROWSER_TYPE, fallback=None)
+
+Instance.config_browser(BROWSER_TYPE, BROWSER_PATH)
 
 manager = InstanceManager(
     spawn_thread_count=SPAWNER_THREAD_COUNT,

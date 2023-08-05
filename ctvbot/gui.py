@@ -99,7 +99,7 @@ class GUI:
     def spawn_auto_func(self, widget):
         if not self.manager.isAutoSpawning:
             target_url = self.channel_url.get()
-            max_target = self._settings.General.getint("auto_spawn_target", fallback=16)
+            max_target = int(self.spawn_auto_max.get())
             threading.Thread(target=self.manager.begin_auto_spawn, args=(max_target, target_url)).start()
             widget.configure(text="Stop Auto")
         else:
@@ -295,7 +295,7 @@ class GUI:
             return True
 
         validate_spawn_auto_max_handle = root.register(validate_spawn_auto_max)
-        spawn_auto_max.configure(validate="key", validatecommand=(validate_spawn_auto_max, "%P"))
+        spawn_auto_max.configure(validate="key", validatecommand=(validate_spawn_auto_max_handle, "%P"))
         spawn_auto_max.place(x=left+100, y=65)
 
         headless_checkbox = ttk.Checkbutton(

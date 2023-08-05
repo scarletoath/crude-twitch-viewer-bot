@@ -25,4 +25,4 @@ class Settings:
 
     def save_settings(self):
         with open(self.pathed_file_name, 'w') as configFile:
-            self._config.write(configFile)
+            self._config.write(configFile, space_around_delimiters=False)

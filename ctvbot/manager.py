@@ -95,7 +95,7 @@ class InstanceManager:
 
             while True:
                 # check for instance count and spawn if needed
-                should_spawn = self.instances_watching_count < max_target
+                should_spawn = self.instances_watching_count < max_target and self.instances_alive_count < max_target
                 #print(f"watch={self.instances_watching_count} target={max_target} spawn={should_spawn}")
 
                 if should_spawn:

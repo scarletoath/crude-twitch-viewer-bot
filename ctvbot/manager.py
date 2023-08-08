@@ -27,6 +27,7 @@ class InstanceManager:
         proxy_file_name,
         spawn_interval_seconds=2,
         target_url=None,
+        restart_checker: RestartChecker = None,
     ):
         logger.info(f"Manager start on {platform.platform()}")
 
@@ -48,7 +49,11 @@ class InstanceManager:
         self.instances_alive_count = 0
         self.instances_watching_count = 0
 
-        self.restart_checker = RestartChecker(manager=self, restart_interval_s=1200)
+        self.restart_checker = restart_checker
+
+    @property
+    def count(self) -> int:
+        return len(self.browser_instances)
 
     def get_user_agents(self):
         try:
@@ -130,7 +135,7 @@ class InstanceManager:
 
     def reconfigure_auto_restart_status(self):
         if self.instances_alive_count and self._auto_restart:
-            self.restart_checker.start()
+            self.restart_checker.start(self)
         else:
             self.restart_checker.stop()
 
@@ -236,7 +241,7 @@ class InstanceManager:
         if instance_id not in self.browser_instances:
             return False
 
-        self.browser_instances[instance_id].command = command
+        self.browser_instances[instance_id].set_command(command)
 
     def delete_latest(self):
         if not self.browser_instances:
@@ -253,8 +258,16 @@ class InstanceManager:
 
         instance = self.browser_instances[instance_id]
         print(f"Issuing shutdown of instance #{instance_id}")
-        instance.command = InstanceCommands.EXIT
+        instance.set_command(InstanceCommands.EXIT)
 
     def delete_all_instances(self):
         for instance_id in self.browser_instances:
             self.delete_specific(instance_id)
+
+    def restart_all_instances(self, refresh:bool=False):
+        command = InstanceCommands.REFRESH if refresh else InstanceCommands.RESTART
+
+        for instance_id in self.browser_instances:
+            instance = self.browser_instances[instance_id]
+            print(f"Issuing {command.name.lower()} of instance #{instance_id}")
+            instance.set_command(command)

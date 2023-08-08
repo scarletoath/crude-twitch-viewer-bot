@@ -101,18 +101,22 @@ class GUI:
             target_url = self.channel_url.get()
             max_target = int(self.spawn_auto_max.get())
             threading.Thread(target=self.manager.begin_auto_spawn, args=(max_target, target_url)).start()
-            widget.configure(text="Stop Auto")
+            widget.configure(text="Stop")
         else:
             self.manager.end_auto_spawn()
-            widget.configure(text="Spawn Auto")
+            widget.configure(text="Auto")
 
     def delete_one_func(self):
-        print("Destroying one instance. Please wait for alive & watching instances decrease.")
+        print("Destroying latest instance. Please wait for alive & watching instances decrease.")
         threading.Thread(target=self.manager.delete_latest).start()
 
     def delete_all_func(self):
-        print("Destroying all instances. Please wait for alive & watching instances decrease.")
+        print(f"Destroying all {self.manager.count} instances. Please wait for alive & watching instances decrease.")
         threading.Thread(target=self.manager.delete_all_instances).start()
+
+    def restart_all_func(self):
+        print(f"Restarting all {self.manager.count} instances. Please wait for alive & watching instances change.")
+        threading.Thread(target=self.manager.restart_all_instances, args=(True,)).start()
 
     def save_settings(self):
         logger.info("Saving settings to file.")
@@ -138,6 +142,21 @@ class GUI:
         if value < 0:
             return 0
         return value
+
+    @staticmethod
+    def create_numeric_validator(callback=None):
+        def validator(P):
+            input = str(P)
+
+            if (len(input) == 0): # empty string
+                return True
+            elif (not str.isdigit(input)): # invalid string with non-digits
+                return False
+        
+            if callback is not None:
+                callback(input)
+            return True
+        return validator
 
     def run(self):
         root = self.root
@@ -209,114 +228,118 @@ class GUI:
 
         # mid log
         left = 140
+        button_width=3
+        entry_width=4
 
-        channel_url = tk.Entry(root, width=45, name="channel_url_entry", textvariable=self.channel_url)
-        channel_url.place(x=left, y=10)
-        #channel_url.insert(0, settings.General.get("channel_url", fallback="https://www.twitch.tv/channel_name"))
+        midFrame = ttk.Frame(root, width=304, height=120, padding=(10, 10), relief="flat")
+        midFrame.grid_propagate(0)
+        midFrame.place(x=126, y=0)
 
+        channel_url = tk.Entry(midFrame, width=20, name="channel_url_entry", textvariable=self.channel_url)
+        channel_url.grid(row=0, column=0, columnspan=6, sticky=tk.EW)
+
+        # - Spawn
+        tk.Label(midFrame, text="Spawn").grid(row=1, column=0, sticky=tk.W, padx=(0, 5))
         spawn_one = tk.Button(
-            root,
-            width=10,
+            midFrame,
+            width=button_width,
             anchor="w",
-            text="Spawn 1",
+            text="1",
             command=lambda: self.spawn_one_func(),
         )
-        spawn_one.place(x=left, y=35)
+        spawn_one.grid(row=1, column=1, sticky=tk.EW)
         spawn_multi = tk.Button(
-            root,
-            width=10,
+            midFrame,
+            width=button_width,
             anchor="w",
-            text=f"Spawn {str(self.spawn_count.get())}",
+            text=f"{str(self.spawn_count.get())}",
             command=lambda: self.spawn_multi_func(),
         )
-        spawn_multi.place(x=left, y=65)
+        spawn_multi.grid(row=1, column=2, sticky=tk.EW)
+        spawn_count = tk.Entry(
+            midFrame, 
+            width=entry_width,
+            name="spawn_count_entry", 
+            textvariable=self.spawn_count,
+            validate="key",
+            validatecommand=(root.register(GUI.create_numeric_validator(lambda input: spawn_multi.configure(text=f"{input}"))), "%P"),
+        )
+        spawn_count.grid(row=1, column=3, padx=(0, 10))
         spawn_auto = tk.Button(
-            root,
-            width=10,
+            midFrame,
+            width=button_width,
             anchor="w",
-            text=f"Spawn Auto",
+            text=f"Auto",
             command=lambda: self.spawn_auto_func(spawn_auto),
         )
-        spawn_auto.place(x=left+100, y=35)
+        spawn_auto.grid(row=1, column=4, sticky=tk.EW)
+        spawn_auto_max = tk.Entry(
+            midFrame, 
+            width=entry_width,
+            name="spawn_auto_max_entry", 
+            textvariable=self.spawn_auto_max,
+            validate="key",
+            validatecommand=(root.register(GUI.create_numeric_validator()), "%P"),
+        )
+        spawn_auto_max.grid(row=1, column=5)
+
+        # - Destroy
+        tk.Label(midFrame, text="Destroy", anchor=tk.W, padx=0).grid(row=2, column=0, sticky=tk.W, padx=(0, 5))
         destroy_one = tk.Button(
-            root,
-            width=10,
+            midFrame,
+            width=button_width,
             anchor="w",
-            text="Destroy last",
+            text="Last",
             command=lambda: self.delete_one_func(),
         )
-        destroy_one.place(x=left+200, y=35)
+        destroy_one.grid(row=2, column=1, sticky=tk.EW)
         destroy_all = tk.Button(
-            root,
-            width=10,
+            midFrame,
+            width=button_width,
             anchor="w",
-            text="Destroy all",
+            text="All",
             command=lambda: self.delete_all_func(),
         )
-        destroy_all.place(x=left+200, y=65)
-        
-        spawn_count = tk.Entry(
-            root, 
-            width=5,
-            name="spawn_count_entry", 
-            textvariable=self.spawn_count
+        destroy_all.grid(row=2, column=2, sticky=tk.EW)
+
+        # - Restart
+        tk.Label(midFrame, text="Restart", anchor=tk.W, padx=0).grid(row=3, column=0, sticky=tk.W, padx=(0, 5))
+        restart_all = tk.Button(
+            midFrame,
+            width=button_width,
+            anchor="w",
+            text="All",
+            command=lambda: self.restart_all_func(),
         )
-
-        def validate_spawn_count(P):
-            input = str(P)
-
-            if (len(input) == 0): # empty string
-                return True
-            elif (not str.isdigit(input)): # invalid string with non-digits
-                return False
-        
-            spawn_multi.configure(text=f"Spawn {input}")
-            return True
-
-        validate_spawn_count_handle = root.register(validate_spawn_count)
-        spawn_count.configure(validate="key", validatecommand=(validate_spawn_count_handle, "%P"))
-        spawn_count.place(x=left, y=94)
-        
-        spawn_auto_max = tk.Entry(
-            root, 
-            width=5,
-            name="spawn_auto_max_entry", 
-            textvariable=self.spawn_auto_max
+        restart_all.grid(row=3, column=1, sticky=tk.EW)
+        auto_restart_checkbox = ttk.Checkbutton(
+            midFrame,
+            variable=self.auto_restart,
+            text="Auto",
+            command=lambda: self.manager.set_auto_restart(self.auto_restart.get()),
+            onvalue=True,
+            offvalue=False,
         )
-
-        def validate_spawn_auto_max(P):
-            input = str(P)
-
-            if (len(input) == 0): # empty string
-                return True
-            elif (not str.isdigit(input)): # invalid string with non-digits
-                return False
+        auto_restart_checkbox.grid(row=3, column=1, columnspan=2, sticky=tk.E)
         
-            return True
-
-        validate_spawn_auto_max_handle = root.register(validate_spawn_auto_max)
-        spawn_auto_max.configure(validate="key", validatecommand=(validate_spawn_auto_max_handle, "%P"))
-        spawn_auto_max.place(x=left+100, y=65)
-
+        # - Misc
         headless_checkbox = ttk.Checkbutton(
-            root,
+            midFrame,
             text="headless",
             variable=self.headless,
             command=lambda: self.manager.set_headless(self.headless.get()),
             onvalue=True,
             offvalue=False,
         )
-        headless_checkbox.place(x=left+100, y=94)
+        headless_checkbox.grid(row=3, column=3, columnspan=3, sticky=tk.E)
 
-        auto_restart_checkbox = ttk.Checkbutton(
-            root,
-            variable=self.auto_restart,
-            text="auto restart",
-            command=lambda: self.manager.set_auto_restart(self.auto_restart.get()),
-            onvalue=True,
-            offvalue=False,
-        )
-        auto_restart_checkbox.place(x=left+200, y=94)
+        # // Post grid config
+        col_count, row_count = midFrame.grid_size()
+        col_weights = [None, 1, 1, None, 1, None]
+        for col in range(col_count):
+            midFrame.columnconfigure(col, pad=4, weight=col_weights[col])
+        for row in range(row_count):
+            midFrame.rowconfigure(row, pad=2)
 
         # mid text box
         text_area = ScrolledText(root, height="7", width="92", font=("regular", 8))

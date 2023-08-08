@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import datetime
 import logging
 import threading
@@ -62,7 +64,7 @@ class Instance(ABC):
                 "free": True,
             }
 
-        self.command = None
+        self._command = None
         self.page = None
 
     @property
@@ -76,6 +78,14 @@ class Instance(ABC):
 
         self._status = new_status
         self.status_reporter(self.id, new_status)
+
+    def set_command(self, new_command: utils.InstanceCommands):
+        if self._command == new_command:
+            return
+
+        self._command = new_command
+        if new_command == utils.InstanceCommands.RESTART:
+            self.last_restart_dt = datetime.datetime.now()
 
     def clean_up_playwright(self):
         if any([self.page, self.context, self.browser]):
@@ -109,19 +119,19 @@ class Instance(ABC):
             self.todo_every_loop()
             self.update_status()
 
-            if self.command == utils.InstanceCommands.RESTART:
+            if self._command == utils.InstanceCommands.RESTART:
                 self.clean_up_playwright()
                 self.spawn_page(restart=True)
                 self.todo_after_spawn()
-            if self.command == utils.InstanceCommands.SCREENSHOT:
+            if self._command == utils.InstanceCommands.SCREENSHOT:
                 print("Saved screenshot of instance id", self.id)
                 self.save_screenshot()
-            if self.command == utils.InstanceCommands.REFRESH:
+            if self._command == utils.InstanceCommands.REFRESH:
                 print("Manual refresh of instance id", self.id)
                 self.reload_page()
-            if self.command == utils.InstanceCommands.EXIT:
+            if self._command == utils.InstanceCommands.EXIT:
                 return
-            self.command = utils.InstanceCommands.NONE
+            self._command = utils.InstanceCommands.NONE
 
     def save_screenshot(self):
         filename = datetime.datetime.now().strftime("%Y%m%d_%H%M%S") + f"_instance{self.id}.png"

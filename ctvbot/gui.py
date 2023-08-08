@@ -232,6 +232,7 @@ class GUI:
         left = 140
         button_width=3
         entry_width=4
+        text_anchor=tk.CENTER
 
         midFrame = ttk.Frame(root, width=304, height=120, padding=(10, 10), relief="flat")
         midFrame.grid_propagate(0)
@@ -245,7 +246,7 @@ class GUI:
         spawn_one = tk.Button(
             midFrame,
             width=button_width,
-            anchor="w",
+            anchor=text_anchor,
             text="1",
             command=lambda: self.spawn_one_func(),
         )
@@ -253,7 +254,7 @@ class GUI:
         spawn_multi = tk.Button(
             midFrame,
             width=button_width,
-            anchor="w",
+            anchor=text_anchor,
             text=f"{str(self.spawn_count.get())}",
             command=lambda: self.spawn_multi_func(),
         )
@@ -270,7 +271,7 @@ class GUI:
         spawn_auto = tk.Button(
             midFrame,
             width=button_width,
-            anchor="w",
+            anchor=text_anchor,
             text=f"Auto",
             command=lambda: self.spawn_auto_func(spawn_auto),
         )
@@ -290,7 +291,7 @@ class GUI:
         destroy_one = tk.Button(
             midFrame,
             width=button_width,
-            anchor="w",
+            anchor=text_anchor,
             text="Last",
             command=lambda: self.delete_one_func(),
         )
@@ -298,7 +299,7 @@ class GUI:
         destroy_all = tk.Button(
             midFrame,
             width=button_width,
-            anchor="w",
+            anchor=text_anchor,
             text="All",
             command=lambda: self.delete_all_func(),
         )
@@ -309,7 +310,7 @@ class GUI:
         restart_all = tk.Button(
             midFrame,
             width=button_width,
-            anchor="w",
+            anchor=text_anchor,
             text="All",
             command=lambda: self.restart_all_func(),
         )

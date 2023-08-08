@@ -134,6 +134,9 @@ class InstanceManager:
         self.instances_alive_count = len(list(alive_instances))
 
     def reconfigure_auto_restart_status(self):
+        if self.restart_checker is None:
+            return
+
         if self.instances_alive_count and self._auto_restart:
             self.restart_checker.start(self)
         else:

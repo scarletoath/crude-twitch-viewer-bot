@@ -87,6 +87,8 @@ class GUI:
     def __del__(self):
         print("Gui shutting down", datetime.datetime.now())
 
+    ### Helpers ###
+
     def spawn_one_func(self):
         print("Spawning one instance. Please wait for alive & watching instances increase.")
         target_url = self.channel_url.get()
@@ -135,6 +137,8 @@ class GUI:
 
         settings.save_settings()
 
+    ### Validators ###
+
     @staticmethod
     def validate_clamp(value, max, default):
         if value == -1:
@@ -160,6 +164,8 @@ class GUI:
             return True
         return validator
 
+    ### Main setup and loop ###
+
     def run(self):
         root = self.root
         self._alive = True
@@ -184,7 +190,7 @@ class GUI:
         path_to_toml = os.path.abspath(os.path.join(path_to_binaries, "pyproject.toml"))
         version = toml.load(path_to_toml)["tool"]["poetry"]["version"]
 
-        root.title(f"Crude twitch viewer bot | v{version} | jlplenio")
+        root.title(f"Crude twitch viewer bot | v{version} | jlplenio (modified by scarletoath)")
 
         # separators
         separator_left = ttk.Separator(orient="vertical")
@@ -395,7 +401,7 @@ class GUI:
             cpu_usage_text.configure(text=" {:.2f}% CPU".format(psutil.cpu_percent()))
             ram_usage_text.configure(text=" {:.2f}% RAM".format(psutil.virtual_memory().percent))
 
-            root.after(750, refresher)
+            root.after(250, refresher)
 
         refresher()
 

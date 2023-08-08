@@ -41,6 +41,7 @@ class InstanceManager:
         self.target_url = target_url
 
         self.manager_lock = threading.Lock()
+        self._auto_spawn_lock = threading.Lock()
         self.screen = Screen(window_width=500, window_height=300)
         self.user_agents_list = self.get_user_agents()
         self.browser_instances = {}
@@ -91,9 +92,19 @@ class InstanceManager:
         return self._stop_auto_spawn_event is not None
 
     def begin_auto_spawn(self, max_target, target_url=None):
-        print(f"Starting auto spawn with target of {max_target}")
-        logger.info(f"Starting auto spawn with target of {max_target}")
-        stop_event = self._stop_auto_spawn_event = threading.Event()
+        if self._stop_auto_spawn_event is not None:
+            if self._stop_auto_spawn_event.isSet():
+                print(f"Waiting for previous auto spawn to be stopped ...")
+                with self._auto_spawn_lock:
+                    pass
+            else: # Trying to start auto before stopping previous -> shouldn't happen but just in case
+                print(f"Cannot start another auto spawn session. Stop the previous session first.")
+                return
+
+        with self._auto_spawn_lock:
+            print(f"Starting auto spawn with target of {max_target}")
+            logger.info(f"Starting auto spawn with target of {max_target}")
+            stop_event = self._stop_auto_spawn_event = threading.Event()
         
         def auto_spawn_loop():
             cond = threading.Condition()
@@ -119,10 +130,11 @@ class InstanceManager:
 
     def end_auto_spawn(self):
         if self._stop_auto_spawn_event is not None:
-            print("Stopping auto spawn")
-            logger.info("Stopping auto spawn")
-            self._stop_auto_spawn_event.set()
-            self._stop_auto_spawn_event = None
+            with self._auto_spawn_lock:
+                print("Stopping auto spawn")
+                logger.info("Stopping auto spawn")
+                self._stop_auto_spawn_event.set()
+                self._stop_auto_spawn_event = None
 
     def _auto_spawn_monitor(self):
         pass

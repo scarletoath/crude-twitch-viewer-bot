@@ -65,7 +65,7 @@ class GUI:
     _DEFAULT_TOP = 500
     _DEFAULT_LEFT = 500
 
-    log_lock = threading.Lock()
+    _log_lock = threading.Lock()
 
     def __init__(self, manager: InstanceManager):
         self.manager = manager
@@ -401,7 +401,7 @@ class GUI:
         # redirect stdout
         def redirector(str_input):
             if self.root and self._alive:
-                with log_lock: # Ensures log writes don't overlap, which can result in mixed up lines
+                with GUI._log_lock: # Ensures log writes don't overlap, which can result in mixed up lines
                     text_area.configure(state=tk.NORMAL)
                     text_area.insert(tk.END, str_input)
                     text_area.see(tk.END)

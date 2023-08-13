@@ -94,15 +94,15 @@ class InstanceManager:
     def begin_auto_spawn(self, max_target, target_url=None):
         if self._stop_auto_spawn_event is not None:
             if self._stop_auto_spawn_event.isSet():
-                print(f"Waiting for previous auto spawn to be stopped ...")
+                logger.guiOnly(f"Waiting for previous auto spawn to be stopped ...")
                 with self._auto_spawn_lock:
                     pass
             else: # Trying to start auto before stopping previous -> shouldn't happen but just in case
-                print(f"Cannot start another auto spawn session. Stop the previous session first.")
+                logger.guiOnly(f"Cannot start another auto spawn session. Stop the previous session first.")
                 return
 
         with self._auto_spawn_lock:
-            print(f"Starting auto spawn with target of {max_target}")
+            logger.guiOnly(f"Starting auto spawn with target of {max_target}")
             logger.info(f"Starting auto spawn with target of {max_target}")
             stop_event = self._stop_auto_spawn_event = threading.Event()
         
@@ -123,7 +123,7 @@ class InstanceManager:
                     pass
 
                 if stop_event.isSet():
-                    print("Auto spawn stopped")
+                    logger.guiOnly("Auto spawn stopped")
                     break
 
         threading.Thread(target=auto_spawn_loop).start()
@@ -131,7 +131,7 @@ class InstanceManager:
     def end_auto_spawn(self):
         if self._stop_auto_spawn_event is not None:
             with self._auto_spawn_lock:
-                print("Stopping auto spawn")
+                logger.guiOnly("Stopping auto spawn")
                 logger.info("Stopping auto spawn")
                 self._stop_auto_spawn_event.set()
                 self._stop_auto_spawn_event = None
@@ -223,7 +223,7 @@ class InstanceManager:
                 screen_location = self.screen.get_free_screen_location()
 
             if not screen_location:
-                print("no screen space left")
+                logger.guiOnly("no screen space left")
                 return
 
             site_class = self.get_site_class(target_url)
@@ -260,7 +260,7 @@ class InstanceManager:
 
     def delete_latest(self):
         if not self.browser_instances:
-            print("No instances found")
+            logger.guiOnly("No instances found")
             return
 
         latest_key = max(self.browser_instances.keys())
@@ -268,11 +268,11 @@ class InstanceManager:
 
     def delete_specific(self, instance_id):
         if instance_id not in self.browser_instances:
-            print(f"Instance ID {instance_id} not found. Unable to shutdown.")
+            logger.guiOnly(f"Instance ID {instance_id} not found. Unable to shutdown.")
             return
 
         instance = self.browser_instances[instance_id]
-        print(f"Issuing shutdown of instance #{instance_id}")
+        logger.guiOnly(f"Issuing shutdown of instance #{instance_id}")
         instance.set_command(InstanceCommands.EXIT)
 
     def delete_all_instances(self):
@@ -284,5 +284,5 @@ class InstanceManager:
 
         for instance_id in self.browser_instances:
             instance = self.browser_instances[instance_id]
-            print(f"Issuing {command.name.lower()} of instance #{instance_id}")
+            logger.guiOnly(f"Issuing {command.name.lower()} of instance #{instance_id}")
             instance.set_command(command)

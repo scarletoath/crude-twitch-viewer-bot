@@ -90,12 +90,12 @@ class GUI:
     ### Helpers ###
 
     def spawn_one_func(self):
-        print("Spawning one instance. Please wait for alive & watching instances increase.")
+        logger.guiOnly("Spawning one instance. Please wait for alive & watching instances increase.")
         target_url = self.channel_url.get()
         threading.Thread(target=self.manager.spawn_instance, args=(target_url,)).start()
 
     def spawn_multi_func(self):
-        print(f"Spawning {self.spawn_count.get()} instances. Please wait for alive & watching instances increase.")
+        logger.guiOnly(f"Spawning {self.spawn_count.get()} instances. Please wait for alive & watching instances increase.")
         target_url = self.channel_url.get()
         spawn_count = int(self.spawn_count.get())
         threading.Thread(target=self.manager.spawn_instances, args=(spawn_count, target_url)).start()
@@ -111,15 +111,15 @@ class GUI:
             widget.configure(text="Auto")
 
     def delete_one_func(self):
-        print("Destroying latest instance. Please wait for alive & watching instances decrease.")
+        logger.guiOnly("Destroying latest instance. Please wait for alive & watching instances decrease.")
         threading.Thread(target=self.manager.delete_latest).start()
 
     def delete_all_func(self):
-        print(f"Destroying all {self.manager.count} instances. Please wait for alive & watching instances decrease.")
+        logger.guiOnly(f"Destroying all {self.manager.count} instances. Please wait for alive & watching instances decrease.")
         threading.Thread(target=self.manager.delete_all_instances).start()
 
     def restart_all_func(self):
-        print(f"Restarting all {self.manager.count} instances. Please wait for alive & watching instances change.")
+        logger.guiOnly(f"Restarting all {self.manager.count} instances. Please wait for alive & watching instances change.")
         threading.Thread(target=self.manager.restart_all_instances, args=(True,)).start()
 
     def save_settings(self):
@@ -414,9 +414,9 @@ class GUI:
                     text_area.see(tk.END)
                     text_area.configure(state=tk.DISABLED)
             else:
-                sys.stdout = sys.__stdout__
+                print(str_input, flush=True)
 
-        sys.stdout.write = redirector
+        logging.Logger.registerFuncHandler(redirector)
 
         def onDestroy(evt):
             if evt.widget is root:

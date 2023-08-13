@@ -102,11 +102,11 @@ class Instance(ABC):
         except Exception as e:
             message = e.args[0][:25] if e.args else ""
             logger.exception(f"{e} died at page {self.page.url if self.page else None}")
-            print(f"{self.name} Instance {self.id} died: {type(e).__name__}:{message}... Please see ctvbot.log.")
+            logger.guiOnly(f"{self.name} Instance {self.id} died: {type(e).__name__}:{message}... Please see ctvbot.log.")
         else:
             logger.info(f"ENDED: instance {self.id}")
             with self.instance_lock:
-                print(f"Instance {self.id} shutting down")
+                logger.guiOnly(f"Instance {self.id} shutting down")
         finally:
             self.status = utils.InstanceStatus.SHUTDOWN
             self.clean_up_playwright()
@@ -124,10 +124,10 @@ class Instance(ABC):
                 self.spawn_page(restart=True)
                 self.todo_after_spawn()
             if self._command == utils.InstanceCommands.SCREENSHOT:
-                print("Saved screenshot of instance id", self.id)
+                logger.guiOnly(f"Saved screenshot of instance id {self.id}")
                 self.save_screenshot()
             if self._command == utils.InstanceCommands.REFRESH:
-                print("Manual refresh of instance id", self.id)
+                logger.guiOnly(f"Manual refresh of instance id {self.id}")
                 self.reload_page()
             if self._command == utils.InstanceCommands.EXIT:
                 return

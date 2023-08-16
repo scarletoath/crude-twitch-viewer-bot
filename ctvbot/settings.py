@@ -16,6 +16,10 @@ class Settings:
         return self._config['General']
 
     @property
+    def Instance(self):
+        return self._config['Instance']
+
+    @property
     def Window(self):
         return self._config['Window']
 

@@ -17,10 +17,50 @@ class Instance(ABC):
     _browser_type = "chromium"
     _browser_path = None
 
+    # Timeouts in milliseconds
+    _timeout_buffer = 1000
+    _timeout_retry  = 20000
+    _timeout_reload = 30000
+    _timeout_wait   = 10000
+    _max_tries      = 3
+    _loc_width      = 500
+    _loc_height     = 300
+
     @staticmethod
     def config_browser(type, path=None):
         Instance._browser_type = type
         Instance._browser_path = path if path else None
+
+    @staticmethod
+    def configure(retrySeconds:int = None, reloadSeconds:int = None, waitSeconds:int = None, getConfigValue:function = None):
+        Instance._timeout_retry  = retrySeconds  * 1000 if retrySeconds  is not None else Instance._timeout_retry
+        Instance._timeout_reload = reloadSeconds * 1000 if reloadSeconds is not None else Instance._timeout_reload
+        Instance._timeout_wait   = waitSeconds   * 1000 if waitSeconds   is not None else Instance._timeout_wait
+
+        if getConfigValue is None: # No extractor provided to get site-specific config -> early out
+            return
+
+        Instance._timeout_buffer = getConfigValue("timeout.buffer", fallback=1) * 1000
+
+        Instance._max_tries  = getConfigValue("maxTries", fallback=3)
+        Instance._loc_width  = getConfigValue("width",    fallback=500)
+        Instance._loc_height = getConfigValue("height",   fallback=300)
+
+        # Enumerate derived classes and try to config if possible
+        derived_instance_types = Instance.__subclasses__()
+        for derived_instance_type in derived_instance_types:
+            foundEx =  None
+            try:
+                derived_instance_type._configure(lambda key, fallback:getConfigValue(f"{derived_instance_type.__name__}.{key}", fallback=fallback)) # prefix key with site name
+                logger.info(f"Loaded site-specific config for Instance->{derived_instance_type.__name__}")
+            except AttributeError as ex:
+                if "_configure" not in ex.args[0]: # Expected _configure() not found if not defined in derived class; any other attribute is true error
+                    foundEx = ex
+            except Exception as ex:
+                foundEx = ex
+            finally:
+                if foundEx is not None:
+                    logger.exception(f"Exception while extracting site-specific config for Instance->{derived_instance_type.__name__}.", exc_info=foundEx)
 
     name = "BASE"
     instance_lock = threading.Lock()
@@ -59,8 +99,8 @@ class Instance(ABC):
                 "index": -1,
                 "x": 0,
                 "y": 0,
-                "width": 500,
-                "height": 300,
+                "width": Instance._loc_width,
+                "height": Instance._loc_height,
                 "free": True,
             }
 
@@ -101,8 +141,9 @@ class Instance(ABC):
             self.loop_and_check()
         except Exception as e:
             message = e.args[0][:25] if e.args else ""
-            logger.exception(f"{e} died at page {self.page.url if self.page else None}")
-            logger.guiOnly(f"{self.name} Instance {self.id} died: {type(e).__name__}:{message}... Please see ctvbot.log.")
+            name = f"{self.name} Instance {self.id}"
+            logger.exception(f"{name} died at page '{self.page.url if self.page else None}'", exc_info=e)
+            logger.guiOnly(f"{name} died: {type(e).__name__}:{message}... Please see ctvbot.log.")
         else:
             logger.info(f"ENDED: instance {self.id}")
             with self.instance_lock:
@@ -113,9 +154,9 @@ class Instance(ABC):
             self.location_info["free"] = True
 
     def loop_and_check(self):
-        page_timeout_s = 10
+        page_timeout_s = Instance._timeout_wait
         while True:
-            self.page.wait_for_timeout(page_timeout_s * 1000)
+            self.page.wait_for_timeout(page_timeout_s)
             self.todo_every_loop()
             self.update_status()
 
@@ -174,25 +215,27 @@ class Instance(ABC):
         self.page = self.context.new_page()
         self.page.add_init_script("""navigator.webdriver = false;""")
 
-    def goto_with_retry(self, url, max_tries=3, timeout=20000):
+    def goto_with_retry(self, url, max_tries=None, timeout=None):
         """
         Tries to navigate to a page max_tries times. Raises the last exception if all attempts fail.
         """
+        timeout = timeout if timeout is not None else Instance._timeout_retry
+        max_tries = max_tries if max_tries is not None else Instance._max_tries
         for attempt in range(1, max_tries + 1):
             try:
                 self.page.goto(url, timeout=timeout)
                 return
-            except Exception:
-                logger.warning(f"Instance {self.id} failed connection attempt #{attempt}.")
+            except Exception as e:
+                logger.warning(f"Instance {self.id} failed connection attempt #{attempt} with timeout of {timeout}ms.")
                 if attempt == max_tries:
                     raise
 
     def todo_after_load(self):
         self.goto_with_retry(self.target_url)
-        self.page.wait_for_timeout(1000)
+        self.page.wait_for_timeout(Instance._timeout_buffer)
 
     def reload_page(self):
-        self.page.reload(timeout=30000)
+        self.page.reload(timeout=Instance._timeout_reload)
         self.todo_after_load()
 
     def todo_after_spawn(self):

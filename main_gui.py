@@ -17,7 +17,13 @@ RESTART_INTERVAL_SECONDS = settings.General.getint("restart_interval_seconds", f
 BROWSER_TYPE = settings.Browsers.get("launch", fallback="chromium")
 BROWSER_PATH = settings.Browsers.get(BROWSER_TYPE, fallback=None)
 
+TIMEOUT_RETRY  = settings.Instance.getint("timeout.retry",  fallback=None)
+TIMEOUT_RELOAD = settings.Instance.getint("timeout.reload", fallback=None)
+TIMEOUT_WAIT   = settings.Instance.getint("timeout.wait",   fallback=None)
+
 Instance.config_browser(BROWSER_TYPE, BROWSER_PATH)
+Instance.configure(retrySeconds=TIMEOUT_RETRY, reloadSeconds=TIMEOUT_RELOAD, waitSeconds=TIMEOUT_WAIT,
+                         getConfigValue=lambda key, fallback: settings.Instance.getint(key, fallback=fallback))
 
 restart_checker = RestartChecker(RESTART_INTERVAL_SECONDS)
 
@@ -34,4 +40,4 @@ manager = InstanceManager(
 print("Available proxies", len(manager.proxies.proxy_list))
 print("Available window locations", len(manager.screen.spawn_locations))
 
-GUI(manager).run()
+GUI(manager, settings).run()

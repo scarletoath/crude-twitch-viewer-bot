@@ -67,12 +67,12 @@ class GUI:
 
     _log_lock = threading.Lock()
 
-    def __init__(self, manager: InstanceManager):
+    def __init__(self, manager: InstanceManager, settings: Settings = None):
         self.manager = manager
         self.queue_counter = 0
         self.root = tk.Tk()
         self.instances_boxes = []
-        self._settings = Settings()
+        self._settings = settings if settings is not None else Settings()
 
         self.headless = tk.BooleanVar(value=manager.get_headless())
         self.auto_restart = tk.BooleanVar(value=manager.get_auto_restart())

@@ -149,13 +149,28 @@ class Twitch(Instance):
         "lowLatencyModeEnabled": "false",
     }
 
+    _player_selector = ".persistent-player"
+
+    # Timeouts in milliseconds
+    _timeout_cookie         = 15000
+    _timeout_playerReady    = 15000
+    _timeout_playerReloaded = 30000
+    _timeout_matureButton   = 3000
+
+    @staticmethod
+    def _configure(getConfigValue):
+        Twitch._timeout_cookie         = getConfigValue("timeout.cookie",         15) * 1000
+        Twitch._timeout_playerReady    = getConfigValue("timeout.playerReady",    15) * 1000
+        Twitch._timeout_playerReloaded = getConfigValue("timeout.playerReloaded", 30) * 1000
+        Twitch._timeout_matureButton   = getConfigValue("timeout.matureButton",    3) * 1000
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
     def todo_after_load(self):
-        self.page.wait_for_selector(".persistent-player", timeout=30000)
-        self.page.wait_for_timeout(1000)
-        self.page.keyboard.press("Alt+t")
+        self.page.wait_for_selector(Twitch._player_selector, timeout=Twitch._timeout_playerReloaded)
+        self.page.wait_for_timeout(Instance._timeout_buffer)
+        self.page.keyboard.press("Alt+t") # theater mode
 
     def update_status(self):
         current_time = datetime.datetime.now()
@@ -202,7 +217,7 @@ class Twitch(Instance):
         self.goto_with_retry("https://www.twitch.tv/login")
 
         try:
-            self.page.click(self.cookie_css, timeout=15000)
+            self.page.click(self.cookie_css, timeout=Twitch._timeout_cookie)
         except:
             logger.warning("Cookie consent banner not found/clicked.")
 
@@ -218,14 +233,14 @@ class Twitch(Instance):
         )
 
         self.goto_with_retry(self.target_url)
-        self.page.wait_for_timeout(1000)
-        self.page.wait_for_selector(".persistent-player", timeout=15000)
-        self.page.keyboard.press("Alt+t")
-        self.page.wait_for_timeout(1000)
+        self.page.wait_for_timeout(Instance._timeout_buffer)
+        self.page.wait_for_selector(Twitch._player_selector, timeout=Twitch._timeout_playerReady)
+        self.page.keyboard.press("Alt+t") # theater mode
+        self.page.wait_for_timeout(Instance._timeout_buffer)
 
         try:
             self.page.click(
-                "button[data-a-target=content-classification-gate-overlay-start-watching-button]", timeout=3000
+                "button[data-a-target=content-classification-gate-overlay-start-watching-button]", timeout=Twitch._timeout_matureButton
             )
         except:
             logger.info("Mature button not found/clicked.")

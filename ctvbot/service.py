@@ -46,7 +46,11 @@ class RestartChecker:
             time.sleep(self.sleep_time)
 
             instances_count = manager.instances_alive_count
-            self.sleep_time = self.restart_interval_s / instances_count
+            if instances_count > 0:
+                self.sleep_time = self.restart_interval_s / instances_count
+            else:
+                logger.warning("Restarter detected zero instances during loop - forcing stop now")
+                self.stop()
 
             if self.abort:
                 self.abort = False

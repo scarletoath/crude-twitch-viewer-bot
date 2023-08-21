@@ -39,7 +39,7 @@ class RestartChecker:
 
     @staticmethod
     def get_oldest_instance(manager: InstanceManager) -> Instance:
-        return min(self.manager.browser_instances.values(), key=lambda instance: instance.last_restart_dt)
+        return min(manager.browser_instances.values(), key=lambda instance: instance.last_restart_dt)
 
     def _restart_loop(self, manager: InstanceManager):
         while True:

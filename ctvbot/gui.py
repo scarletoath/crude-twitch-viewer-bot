@@ -212,6 +212,13 @@ class GUI:
             lambda event: webbrowser.open("https://www.webshare.io/?referral_code=w6nfvip4qp3g"),
         )
         lbl_buy.place(x=left+18, y=62)
+        tk.Button(
+            root,
+            width=7,
+            anchor=tk.CENTER,
+            text="Refresh",
+            command=self.manager.refresh_proxies,
+        ).place(x=left+20, y=87.5)
 
         # right
         left = 440
@@ -393,7 +400,7 @@ class GUI:
                 self.instances_boxes[index].modify(utils.InstanceStatus.INACTIVE, None)
 
             # Instances counts
-            proxy_available.configure(text=len(self.manager.proxies.proxy_list))
+            proxy_available.configure(text=len(self.manager.proxies))
             alive_instances.configure(text=self.manager.instances_alive_count)
             watching_instances.configure(text=str(self.manager.instances_watching_count))
 

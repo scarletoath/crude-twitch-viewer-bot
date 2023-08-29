@@ -37,7 +37,7 @@ manager = InstanceManager(
     restart_checker=restart_checker,
 )
 
-print("Available proxies", len(manager.proxies.proxy_list))
+print("Available proxies", len(manager.proxies))
 print("Available window locations", len(manager.screen.spawn_locations))
 
 GUI(manager, settings).run()

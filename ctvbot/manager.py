@@ -78,6 +78,10 @@ class InstanceManager:
         self._auto_restart = new_value
         self.reconfigure_auto_restart_status()
 
+    def refresh_proxies(self):
+        if self.proxies is not None:
+            self.proxies.refresh()
+
     def __del__(self):
         self.end_auto_spawn()
         print("Deleting manager: cleaning up instances", datetime.datetime.now())

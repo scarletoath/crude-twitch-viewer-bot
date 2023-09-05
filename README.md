@@ -5,6 +5,16 @@
 [![](https://github.com/scarletoath/crude-twitch-viewer-bot/actions/workflows/build.yml/badge.svg)](https://github.com/scarletoath/crude-twitch-viewer-bot/actions/workflows/build.yml)
 
 >Disclaimer: For educational purpose only. Any discussion of illegal use will be deleted immediately!
+
+![image](https://github.com/scarletoath/crude-twitch-viewer-bot/assets/1894141/812ef4bf-0267-46b8-b39f-bad2f048943b)
+### Additions / Changes / Fixes to source repo
+- Tooltip hover
+- Updated layout with editable counts
+- Auto-save settings (with advanced configuration)
+- Auto-spawn until target count
+- More colors for statuses
+- Quick manual restart
+
 ### Getting Started
 Download the one-file executable for Windows, Linux and MacOS from the [latest CTVBot release](https://github.com/jlplenio/crude-twitch-viewer-bot/releases/latest).  
 Read the comprehensive [wiki](https://github.com/jlplenio/crude-twitch-viewer-bot/wiki) for a [detailed tutorial](https://github.com/jlplenio/crude-twitch-viewer-bot/wiki/Detailed-Tutorial), [usage tips](https://github.com/jlplenio/crude-twitch-viewer-bot/wiki/Advanced-features-and-controls) and [troubleshooting steps](https://github.com/jlplenio/crude-twitch-viewer-bot/wiki/Troubleshooting).

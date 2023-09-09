@@ -24,7 +24,7 @@ class InstanceManager:
         delete_thread_count,
         headless,
         auto_restart,
-        proxy_file_name,
+        proxies_or_proxy_file_name,
         spawn_interval_seconds=2,
         target_url=None,
         restart_checker: RestartChecker = None,
@@ -36,7 +36,7 @@ class InstanceManager:
         self._headless = headless
         self._auto_restart = auto_restart
         self._stop_auto_spawn_event = None
-        self.proxies = ProxyGetter(os.path.join(os.getcwd(), "proxy", proxy_file_name))
+        self.proxies = proxies_or_proxy_file_name if isinstance(proxies_or_proxy_file_name, ProxyGetter) else ProxyGetter(proxy_file_name)
         self.spawn_interval_seconds = spawn_interval_seconds
         self.target_url = target_url
 

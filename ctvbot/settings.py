@@ -16,6 +16,10 @@ class Settings:
         return self._config['General']
 
     @property
+    def Proxies(self):
+        return self._config['Proxies']
+
+    @property
     def Instance(self):
         return self._config['Instance']
 

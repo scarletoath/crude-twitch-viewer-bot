@@ -132,6 +132,12 @@ class GUI:
         settings.General["auto_restart"] = str(self.auto_restart.get())
         settings.General["channel_url"] = self.channel_url.get()
 
+        proxy_source_paths = list(self.manager.proxies.source_paths)
+        enabled_paths = filter(lambda s: self.manager.proxies.is_source_enabled(s), proxy_source_paths)
+        disabled_paths = filter(lambda s: not self.manager.proxies.is_source_enabled(s), proxy_source_paths)
+        settings.Proxies["enabled"]  = "\n\t".join(enabled_paths)
+        settings.Proxies["disabled"] = "\n\t".join(disabled_paths)
+
         settings.Window["top"] = str(self.root.winfo_y())
         settings.Window["left"] = str(self.root.winfo_x())
 
@@ -214,11 +220,43 @@ class GUI:
         lbl_buy.place(x=left+18, y=62)
         tk.Button(
             root,
-            width=7,
+            width=6,
             anchor=tk.CENTER,
             text="Refresh",
             command=self.manager.refresh_proxies,
-        ).place(x=left+20, y=87.5)
+        ).place(x=left, y=87.5)
+
+        # - Proxy Sources toggle / Selection
+        show_proxy_sources = tk.IntVar(root, value=0)
+        proxy_sources_toggle = tk.Checkbutton(
+            root,
+            width=6,
+            height=1,
+            anchor=tk.CENTER,
+            text="Sources",
+            indicatoron=0,
+            command=lambda: proxy_sources_listbox.place(x=72, y=112.5) if show_proxy_sources.get() > 0 else proxy_sources_listbox.place_forget(),
+            variable=show_proxy_sources,
+        )
+        proxy_sources_toggle.place(x=left+52, y=87.5)
+
+        def update_proxy_sources(enabled_indices):
+            for i in range(len(proxy_sources)):
+                is_enabled = i in enabled_indices
+                self.manager.proxies.enable_source_path(proxy_sources[i], is_enabled)
+        proxy_sources = list(self.manager.proxies.source_paths)
+        proxy_sources_var = tk.StringVar(value=proxy_sources)
+        proxy_sources_listbox = tk.Listbox(root, listvariable = proxy_sources_var, selectmode="extended", width=2+max(16, max(map(lambda s: len(s), proxy_sources))), height=5)
+        proxy_sources_listbox.bind("<<ListboxSelect>>", lambda evt: update_proxy_sources(evt.widget.curselection()))
+
+        proxy_sources_scrollbar = tk.Scrollbar(proxy_sources_listbox, orient=tk.VERTICAL, command=proxy_sources_listbox.yview)
+        proxy_sources_scrollbar.place(relx=1, x=-17, relheight=1)
+        proxy_sources_listbox.configure(yscrollcommand=proxy_sources_scrollbar.set)
+
+        # - Set initial selection based on state
+        for i in range(len(proxy_sources)):
+            if self.manager.proxies.is_source_enabled(proxy_sources[i]):
+                proxy_sources_listbox.selection_set(i)
 
         # right
         left = 440
@@ -386,6 +424,8 @@ class GUI:
         )
         lbl.bind("<Button-1>", lambda event: webbrowser.open(lbl.cget("text")))
         lbl.place(x=150, y=288)
+
+        proxy_sources_listbox.tkraise(lbl)
 
         # refresh counters
         def refresher():

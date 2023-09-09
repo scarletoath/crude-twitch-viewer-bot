@@ -1,4 +1,6 @@
 import time
+from ctvbot.proxy import ProxyGetter
+from ctvbot.service import RestartChecker
 
 
 def test_open_one_instance(record_property):

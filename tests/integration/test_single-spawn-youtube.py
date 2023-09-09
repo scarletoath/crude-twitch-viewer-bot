@@ -14,14 +14,18 @@ def test_open_one_instance(record_property):
     target_url = "https://www.youtube.com/watch?v=jfKfPfyJRdk"
     print("Watching", str(target_url))
 
+    restart_checker = RestartChecker(2)
+    proxies = ProxyGetter(PROXY_FILE_NAME)
+
     manager = InstanceManager(
         spawn_thread_count=SPAWNER_THREAD_COUNT,
         delete_thread_count=CLOSER_THREAD_COUNT,
         headless=HEADLESS,
         auto_restart=AUTO_RESTART,
-        proxy_file_name=PROXY_FILE_NAME,
+        proxies_or_proxy_file_name=proxies,
         spawn_interval_seconds=SPAWN_INTERVAL_SECONDS,
         target_url=target_url,
+        restart_checker=restart_checker,
     )
 
     manager.spawn_instance()
